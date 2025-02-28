@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porfyro Assignment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">ShopNow</div>
+            <div class="cart-icon" id="cartIcon">
+                🛒
+                <span class="cart-count" id="cartCount">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="controls-content">
+                <input type="text" class="search-box" id="searchBox" placeholder="Search products...">
+                <select class="category-filter" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <!-- Categories will be added dynamically -->
+                </select>
+                <select class="sort-options" id="sortOptions">
+                    <option value="">Sort by</option>
+                    <option value="low-to-high">Price: Low to High</option>
+                    <option value="high-to-low">Price: High to Low</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be loaded dynamically -->
+            <div class="loading">Loading products...</div>
+        </div>
+    </div>
+
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Your Cart</h2>
+                <span class="close-modal" id="closeModal">&times;</span>
+            </div>
+            <div id="cartContent">
+                <!-- Cart items will be loaded dynamically -->
+                <div class="empty-cart-message">Your cart is empty.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

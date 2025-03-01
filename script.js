@@ -118,32 +118,40 @@ const allProducts = () => {
         productsGrid.appendChild(productElement);
     })
 
-    document.addEventListener('click', (event) => {
-        const target = event.target;
 
-        if (target.classList.contains('variety-option')) {
-            handlePriceChange(target);
-        } else if (target.classList.contains('add-to-cart')) {
-            addToCart(target);
-        }
+    document.querySelectorAll('.variety-option').forEach(option => {
+        option.addEventListener('click', handlePriceChange);
+    });
+
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', addToCart);
     });
 }
-function handlePriceChange(selectedOption) {
+
+
+function handlePriceChange(event) {
+    const selectedOption = event.target
     const productId = parseInt(selectedOption.parentElement.dataset.productId);
     const varietyId = parseInt(selectedOption.dataset.varietyId);
-    const product = products.find(p => p.id === productId);
-    const selectedVariety = product.varieties.find(v => v.id === varietyId);
-    const priceElement = selectedOption.parentElement.nextElementSibling;
 
-    selectedOption.parentElement.querySelectorAll('.variety-option').forEach(option => option.classList.remove('selected'));
+    selectedVarieties[productId] = varietyId
+
+    const selectedOptionParent = selectedOption.parentElement;
+    selectedOptionParent.querySelectorAll('.variety-option').forEach(option => {
+        option.classList.remove('selected');
+    });
     selectedOption.classList.add('selected');
 
+    const product = products.find(p => p.id === productId);
+    const selectedVariety = product.varieties.find(v => v.id === varietyId);
+    const priceElement = selectedOptionParent.nextElementSibling;
     priceElement.textContent = `₹${selectedVariety.price}`;
+
 }
 
 
-function addToCart(button) {
-    const productId = parseInt(button.dataset.productId);
+function addToCart(event) {
+    const productId = parseInt(event.target.dataset.productId);
     const product = products.find(p => p.id === productId);
     const varietyId = selectedVarieties[productId];
     const variety = product.varieties.find(v => v.id === varietyId);
@@ -160,7 +168,7 @@ function addToCart(button) {
             varietyName: variety.name,
             price: variety.price,
             imageUrl: product.image_url,
-            quantity: 1 //Added the missing quantity property.
+            quantity: 1
         });
     }
 
@@ -192,10 +200,10 @@ function displayCart() {
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         totalAmount += itemTotal;
-
+        console.log(item.imageUrl)
         cartHTML += `
                 <div class="cart-item">
-                    <img src="${item.imageUrl}" alt="${item.productName}" class="cart-item-image">
+                    <img src='${item.imageUrl}' alt="${item.productName}" class="cart-item-image">
                     <div class="cart-item-details">
                         <div class="cart-item-name">${item.productName}</div>
                         <div class="cart-item-variety">${item.varietyName}</div>
@@ -263,7 +271,7 @@ function displayCart() {
             item.productId === productId && item.varietyId === varietyId
         )
         if (itemIndex !== -1) {
-            if (itemIndex > 1) {
+            if (cart[itemIndex].quantity > 1) {
                 cart[itemIndex].quantity -= 1
             } else {
                 cart.splice(itemIndex, 1);
@@ -295,7 +303,7 @@ function displayCart() {
 
         const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-        alert(`Thank you for your order!\nTotal Amount: ${formatPrice(totalAmount)}\n\nIn a real application, you would be redirected to a payment gateway.`);
+        alert(`Thank you for your order!\nTotal Amount: ${totalAmount}\n\nIn a real application, you would be redirected to a payment gateway.`);
 
         cart = [];
         displayCart();

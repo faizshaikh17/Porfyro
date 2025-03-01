@@ -13,7 +13,7 @@ let cart = [];
 let selectedVarieties = [];
 
 
-const API_URL = "http://localhost/products.php"
+const API_URL = "http://localhost/products.php" // php api via xampp
 
 
 const loadProducts = async () => {
@@ -37,6 +37,8 @@ const loadProducts = async () => {
     }
 }
 
+
+// set categories in the select element
 const allCategories = () => {
     const categories = [...new Set(products.map(product => product.category))];
     categories.forEach((category) => {
@@ -47,18 +49,19 @@ const allCategories = () => {
     });
 }
 
+// main func. responsible to add products dynamically
 const allProducts = () => {
     const searchValue = searchBox.value.toLowerCase();
     const categoryValue = categoryFilter.value;
 
+    // filter & category logic
     let filterProducts = products.filter(product => {
         const searchMatch = product.name.toLowerCase().includes(searchValue);
         const categoryMatch = categoryValue === '' || product.category === categoryValue
         return searchMatch && categoryMatch
     })
 
-
-
+    // sorting logic
     const sortValue = sortOptions.value;
     if (sortValue === 'low-to-high') {
         filterProducts.sort((a, b) => {
@@ -83,6 +86,8 @@ const allProducts = () => {
             return bVariety.price - aVariety.price;
         })
     }
+
+    //main productCard start here
 
     productsGrid.innerHTML = '';
 
@@ -128,7 +133,7 @@ const allProducts = () => {
     });
 }
 
-
+// func. to navigate between different prices of 1 product
 function handlePriceChange(event) {
     const selectedOption = event.target
     const productId = parseInt(selectedOption.parentElement.dataset.productId);
@@ -150,7 +155,9 @@ function handlePriceChange(event) {
 }
 
 
+// simple add-to-cart func.
 function addToCart(event) {
+
     const productId = parseInt(event.target.dataset.productId);
     const product = products.find(p => p.id === productId);
     const varietyId = selectedVarieties[productId];
@@ -173,6 +180,7 @@ function addToCart(event) {
     }
 
     cartCounter();
+    persistCartData(cart)
     button.textContent = "Added";
     button.style.backgroundColor = '#2ecc71';
 
@@ -182,11 +190,13 @@ function addToCart(event) {
     }, 1000);
 }
 
+//counter for the total order above cart Icon
 function cartCounter() {
     const totalItems = cart.reduce((total, item) => total + (item.quantity || 0), 0);
     cartCount.textContent = totalItems;
 }
 
+// cart to show the total orders and manipulate the order
 function displayCart() {
     if (cart.length === 0) {
         cartContent.innerHTML = '<div class="empty-cart-message">Your cart is empty.</div>';
@@ -196,6 +206,8 @@ function displayCart() {
     let totalAmount = 0;
 
     let cartHTML = '<div class="cart-items">';
+
+    // cart component, similar like product but in cart
 
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
@@ -207,7 +219,7 @@ function displayCart() {
                     <div class="cart-item-details">
                         <div class="cart-item-name">${item.productName}</div>
                         <div class="cart-item-variety">${item.varietyName}</div>
-                        <div class="cart-item-price">${item.price} each</div>
+                        <div class="cart-item-price">₹${item.price} each</div>
                         <div class="cart-item-quantity">
                             <button class="quantity-btn decrease" data-product-id="${item.productId}" data-variety-id="${item.varietyId}">-</button>
                             <span>${item.quantity}</span>
@@ -245,7 +257,7 @@ function displayCart() {
 
     document.getElementById('checkoutBtn').addEventListener('click', checkout);
 
-
+    // func. to increase the product by 1
     function increaseItem(event) {
         const productId = parseInt(event.target.dataset.productId);
         const varietyId = parseInt(event.target.dataset.varietyId);
@@ -256,11 +268,14 @@ function displayCart() {
 
         if (itemIndex !== -1) {
             cart[itemIndex].quantity += 1;
+            persistCartData(cart)
             displayCart();
             cartCounter()
         }
 
     }
+
+    // func. to decrease the product by 1
 
     function decreaseItem(event) {
         const productId = parseInt(event.target.dataset.productId);
@@ -276,12 +291,14 @@ function displayCart() {
             } else {
                 cart.splice(itemIndex, 1);
             }
+            persistCartData(cart)
             displayCart();
             cartCounter()
         }
 
     }
 
+    // func. permanently remove the item
     function removeItem(event) {
         const productId = parseInt(event.target.dataset.productId);
         const varietyId = parseInt(event.target.dataset.varietyId);
@@ -292,27 +309,26 @@ function displayCart() {
 
         if (itemIndex !== -1) {
             cart.splice(itemIndex, 1);
-
+            persistCartData(cart)
             displayCart();
             cartCounter()
         }
     }
 
+    // func. to sum all products and billing    
     function checkout() {
         if (cart.length === 0) return;
 
         const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-        alert(`Thank you for your order!\nTotal Amount: ${totalAmount}\n\nIn a real application, you would be redirected to a payment gateway.`);
+        alert(`Thank you for your order!\nTotal Amount: ₹${totalAmount}\n\nIn a real application, you would be redirected to a payment gateway.`);
 
         cart = [];
         displayCart();
         cartCounter()
-
+        persistCartData(cart)
         cartModal.classList.remove('active');
     }
-
-
 
 }
 
@@ -345,5 +361,28 @@ function eventListeners() {
 }
 
 
-loadProducts();
+function persistCartData(cart) {
+    try {
+        localStorage.setItem('cartData', JSON.stringify(cart));
+    } catch (error) {
+        console.error('Error saving cart to local storage:', error);
+    }
+}
+
+function loadCartData() {
+    try {
+        const cartData = JSON.parse(localStorage.getItem('cartData'));
+        return cartData ? cartData : [];
+    } catch (error) {
+        console.error('Error loading cart from local storage:', error);
+        return [];
+    }
+}
+
+
+
+loadProducts().then(() => {
+    cart = loadCartData(); // Initialize cart from localStorage
+    cartCounter(); // Update cart counter
+});
 eventListeners();
